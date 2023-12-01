@@ -105,18 +105,8 @@ impl core::cmp::Eq for MembersCommitment {}
 
 pub struct BandersnatchVrfVerifiable;
 
-impl GenerateVerifiable for BandersnatchVrfVerifiable {
-	type MembersSetupKey = RawKzgVerifierKey<Bls12_381>;
-	type Members = MembersCommitment;
-	type Intermediate = MembersSet;
-	type Member = ArkScale<PublicKey>;
-	type Secret = SecretKey;
-	type Commitment = (u32, ArkScale<ProverKey>);
-	type Proof = [u8; RING_SIGNATURE_SIZE];
-	type Signature = [u8; THIN_SIGNATURE_SIZE];
-	type StaticChunk = ArkScale<bls12_381::G1Affine>;
-
-	fn start_members(vk: Self::MembersSetupKey, lookup: impl Fn(usize, usize) -> Result<Vec<Self::StaticChunk>, ()>) -> MembersSet {
+impl BandersnatchVrfVerifiable {
+	fn start_members_from_params(vk: RawKzgVerifierKey<Bls12_381>, lookup: impl Fn(usize, usize) -> Result<Vec<ArkScale<bls12_381::G1Affine>>, ()>) -> MembersSet {
 		let piop_params = bandersnatch_vrfs::ring::make_piop_params(DOMAIN_SIZE);
 		let offset = piop_params.keyset_part_size;
 		let len = DOMAIN_SIZE - offset;
@@ -127,6 +117,21 @@ impl GenerateVerifiable for BandersnatchVrfVerifiable {
 		MembersSet {
 			ring
 		}
+	}
+}
+
+impl GenerateVerifiable for BandersnatchVrfVerifiable {
+	type Members = MembersCommitment;
+	type Intermediate = MembersSet;
+	type Member = ArkScale<PublicKey>;
+	type Secret = SecretKey;
+	type Commitment = (u32, ArkScale<ProverKey>);
+	type Proof = [u8; RING_SIGNATURE_SIZE];
+	type Signature = [u8; THIN_SIGNATURE_SIZE];
+	type StaticChunk = ArkScale<bls12_381::G1Affine>;
+
+	fn start_members() -> MembersSet {
+		todo!();
 	}
 
 	fn push_member(
@@ -337,7 +342,7 @@ mod tests {
 				.collect();
 			Ok(res)
 		};
-		let mut inter = BandersnatchVrfVerifiable::start_members(kzg.pcs_params.raw_vk(), get_many);
+		let mut inter = BandersnatchVrfVerifiable::start_members_from_params(kzg.pcs_params.raw_vk(), get_many);
 		BandersnatchVrfVerifiable::push_member(&mut inter, alice.clone(), get_one).unwrap();
 		BandersnatchVrfVerifiable::push_member(&mut inter, bob.clone(), get_one).unwrap();
 		BandersnatchVrfVerifiable::push_member(&mut inter, charlie.clone(), get_one).unwrap();
@@ -397,7 +402,7 @@ mod tests {
 			Ok(res)
 		};
 
-		let mut inter = BandersnatchVrfVerifiable::start_members(kzg.pcs_params.raw_vk(), get_many);
+		let mut inter = BandersnatchVrfVerifiable::start_members_from_params(kzg.pcs_params.raw_vk(), get_many);
 		members.iter().for_each(|member| {
 			BandersnatchVrfVerifiable::push_member(&mut inter, member.clone(), get_one).unwrap();
 		});
