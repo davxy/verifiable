@@ -8,7 +8,7 @@ use bandersnatch_vrfs::{
 use bandersnatch_vrfs::{ring::KZG, RingProver};
 use bandersnatch_vrfs::bandersnatch::BandersnatchConfig;
 use bandersnatch_vrfs::bls12_381::Bls12_381;
-use bandersnatch_vrfs::ring::VerifierKey;
+use bandersnatch_vrfs::ring::{OffChainKey, VerifierKey};
 use fflonk::pcs::kzg::params::RawKzgVerifierKey;
 use ring::ring::{Ring, RingBuilderKey, SrsSegment};
 
@@ -27,9 +27,6 @@ const VRF_OUTPUT_DOMAIN: &[u8] = b"VerifiableBandersnatchInput";
 const THIN_SIGNATURE_SIZE: usize = 65;
 const RING_SIGNATURE_SIZE: usize = 788;
 
-#[cfg(feature = "std")]
-static KZG_BYTES: &[u8] = include_bytes!("test2e9.kzg");
-
 // Some naive benchmarking for deserialization of KZG with domain size 2^16
 // - compressed + checked = ~16 s
 // - uncompressed + checked = ~12 s
@@ -40,10 +37,10 @@ fn kzg() -> &'static KZG {
 	use std::sync::OnceLock;
 	static CELL: OnceLock<KZG> = OnceLock::new();
 	CELL.get_or_init(|| {
-		<KZG as CanonicalDeserialize>::deserialize_compressed_unchecked(
-			KZG_BYTES,
-		)
-		.unwrap()
+		let pk = OffChainKey::deserialize_uncompressed_unchecked(
+			std::fs::read(zcash_params::OFFCHAIN_KEY_PATH).unwrap().as_slice()
+		).unwrap();
+		KZG::zcash_kzg_setup(DOMAIN_SIZE, pk)
 	})
 }
 

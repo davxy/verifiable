@@ -17,6 +17,9 @@ bandersnatch_vrfs = { git = "https://github.com/w3f/ring-vrf.git", branch = "pub
 fflonk = { git = "https://github.com/w3f/fflonk", default-features = false }
 ring = { git = "https://github.com/w3f/ring-proof.git" }
 
+ark-ff = { version = "0.4", default-features = false }
+ark-ec = { version = "0.4", default-features = false }
+
 [dev-dependencies]
 rand_core = "0.6"
 
@@ -32,3 +35,6 @@ std = [
   "bandersnatch_vrfs/std",
   #TODO
 ]
+
+[patch."https://github.com/w3f/ring-vrf"]
+bandersnatch_vrfs = { path = "../../w3f/ring-vrf/bandersnatch_vrfs" }
