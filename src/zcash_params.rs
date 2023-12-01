@@ -8,7 +8,7 @@ use ark_ff::MontFp;
 // KZG verification key formed using zcash powers of tau setup,
 // see https://zfnd.org/conclusion-of-the-powers-of-tau-ceremony/
 // This depends only on the trapdoor tau and doesn't change with the SRS size.
-const ZCASH_KZG_VK: RawKzgVerifierKey<Bls12_381> = {
+pub(crate) const ZCASH_KZG_VK: RawKzgVerifierKey<Bls12_381> = {
     const ZCASH_TAU_G2: bls12_381::G2Affine = {
         const TAU_G2_X_C0: bls12_381::Fq = MontFp!("186544079744757791750913777923182116923406997981176124505869835669370349308168084101869919858020293159217147453183");
         const TAU_G2_X_C1: bls12_381::Fq = MontFp!("2680951345815209329447762511030627858997446358927866220189443219836425021933771668894483091748402109907600527683136");

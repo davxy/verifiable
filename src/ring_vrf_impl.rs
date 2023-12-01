@@ -47,7 +47,6 @@ fn kzg() -> &'static KZG {
 #[derive(Debug, Clone, Eq, PartialEq, CanonicalDeserialize, CanonicalSerialize)]
 pub struct MembersSet{
 	ring: Ring<bandersnatch_vrfs::bls12_381::Fr, Bls12_381, BandersnatchConfig>,
-    kzg_raw_vk: RawKzgVerifierKey<Bls12_381>,
 }
 
 ark_scale::impl_scale_via_ark!(MembersSet);
@@ -106,7 +105,6 @@ impl core::cmp::Eq for MembersCommitment {}
 pub struct BandersnatchVrfVerifiable;
 
 pub struct SetupKey {
-	kzg_raw_vk: RawKzgVerifierKey<Bls12_381>,
 	ring_builder_key: RingBuilderKey<bandersnatch_vrfs::bls12_381::Fr, Bls12_381>,
 }
 
@@ -125,7 +123,6 @@ impl GenerateVerifiable for BandersnatchVrfVerifiable {
 		let piop_params = bandersnatch_vrfs::ring::make_piop_params(DOMAIN_SIZE);
 		MembersSet {
 			ring: Ring::<bandersnatch_vrfs::bls12_381::Fr, Bls12_381, BandersnatchConfig>::empty(&piop_params, &params.ring_builder_key.lis_in_g1, params.ring_builder_key.g1),
-			kzg_raw_vk: params.kzg_raw_vk.clone(),
 		}
 	}
 
@@ -143,7 +140,7 @@ impl GenerateVerifiable for BandersnatchVrfVerifiable {
 	}
 
 	fn finish_members(inter: Self::Intermediate) -> Self::Members {
-		let verifier_key = VerifierKey::from_ring_and_kzg_vk(&inter.ring, inter.kzg_raw_vk);
+		let verifier_key = VerifierKey::from_ring_and_kzg_vk(&inter.ring, zcash_params::ZCASH_KZG_VK);
 		MembersCommitment(verifier_key)
 	}
 
@@ -329,7 +326,6 @@ mod tests {
 		let kzg = kzg();
 		let ring_builder_key = RingBuilderKey::from_srs(&kzg.pcs_params, kzg.domain_size as usize);
 		let setup_key = SetupKey {
-			kzg_raw_vk: kzg.pcs_params.raw_vk(),
 			ring_builder_key: ring_builder_key.clone(),
 		};
 		let lis = ring_builder_key.lis_in_g1;
@@ -387,7 +383,6 @@ mod tests {
 		let kzg = kzg();
 		let ring_builder_key = RingBuilderKey::from_srs(&kzg.pcs_params, kzg.domain_size as usize);
 		let setup_key = SetupKey {
-			kzg_raw_vk: kzg.pcs_params.raw_vk(),
 			ring_builder_key: ring_builder_key.clone(),
 		};
 		let lis = ring_builder_key.lis_in_g1;
