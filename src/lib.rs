@@ -11,7 +11,7 @@ use scale_info::*;
 
 // pub mod demo_impls;
 pub mod ring_vrf_impl;
-mod zcash_params;
+mod zcash_consts;
 
 // Fixed types:
 

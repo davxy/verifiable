@@ -39,7 +39,7 @@ fn kzg() -> &'static KZG {
 	static CELL: OnceLock<KZG> = OnceLock::new();
 	CELL.get_or_init(|| {
 		let pk = OffChainKey::deserialize_uncompressed_unchecked(
-			std::fs::read(zcash_params::OFFCHAIN_KEY_PATH).unwrap().as_slice()
+			std::fs::read(zcash_consts::OFFCHAIN_KEY_PATH).unwrap().as_slice()
 		).unwrap();
 		KZG::zcash_kzg_setup(DOMAIN_SIZE, pk)
 	})
@@ -148,7 +148,7 @@ impl GenerateVerifiable for BandersnatchVrfVerifiable {
 	}
 
 	fn finish_members(inter: Self::Intermediate) -> Self::Members {
-		let verifier_key = VerifierKey::from_ring_and_kzg_vk(&inter.ring, zcash_params::ZCASH_KZG_VK);
+		let verifier_key = VerifierKey::from_ring_and_kzg_vk(&inter.ring, zcash_consts::ZCASH_KZG_VK);
 		MembersCommitment(verifier_key)
 	}
 
